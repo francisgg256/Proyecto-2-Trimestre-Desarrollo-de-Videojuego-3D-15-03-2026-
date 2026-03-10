@@ -1,75 +1,66 @@
-using UnityEngine;
+using UnityEngine; 
 
 public class ControlJuego : MonoBehaviour
 {
-    public int puntuacionActual;
-    public bool juegoPausado;
+    public bool juegoPausado; 
     public static ControlJuego instancia;
 
-    private int enemigosRestantes;
+    private int enemigosRestantes; 
 
-    public void Awake()
+    public void Awake() 
     {
-        //patrón singleton para que cualquier script pueda llamarlo
+        // uso del patrón singleton para que todos los scripts puedan acceder a este
         if (instancia == null) instancia = this;
     }
 
-    private void Start()
+    private void Start() 
     {
-        //se guarda el número de enemigos buscandolos por etiqueta
+        // busca los enemigos en el mapa guardando el número usando la etiqueta enemigo
         enemigosRestantes = GameObject.FindGameObjectsWithTag("Enemigo").Length;
     }
 
     private void Update()
     {
-        //escucha si se pulsa el botón de escape para poner el menú de pausa
+        // si se pulsa el escape se pausa el juego
         if (Input.GetButtonDown("Cancel"))
         {
             cambiarPausa();
         }
     }
 
-    public void cambiarPausa()
+    public void cambiarPausa() 
     {
-        juegoPausado = !juegoPausado;
-        //para el juego para que no siga funcionando mientras esta en pausa
+        juegoPausado = !juegoPausado; // pone el juego en pausa
+
+        // congela el tiempo o lo descongela dependiendo de si el juego esta pausado o no
         Time.timeScale = (juegoPausado) ? 0.0f : 1.0f;
-        //desbloquea el ratón para poder usarlo en el menú
+
+        // si el juego esta pausado permite usar el ratón para poder navegar por el menu de pausa
         Cursor.lockState = (juegoPausado) ? CursorLockMode.None : CursorLockMode.Locked;
 
-        //avisa al hud para poner el menú de pausa
+        // llama a ControlHUD para que muestre el menu de pausa
         ControlHUD.instancia.CambiarEstadoVentanaPausa(juegoPausado);
-    }
-
-    public void PonerPuntuacion(int puntuacion)
-    {
-        //suma la puntuación
-        puntuacionActual += puntuacion;
-        //avisa al hud para que cambie la puntuación
-        ControlHUD.instancia.actualizarPuntuacion(puntuacionActual);
     }
 
     public void EnemigoDerrotado()
     {
-        //resta uno a los enemigos restantes
-        enemigosRestantes--; 
-        Debug.Log("Enemigo eliminado. Quedan: " + enemigosRestantes);
+        enemigosRestantes--; // resta un enemigo a los enemigos restantes
+        Debug.Log("Enemigo eliminado. Quedan: " + enemigosRestantes); // muestra un mensaje de los enemigos que quedan
 
-        //si los enemigos llegan a 0 se llama a ganar juego
+        // comprueba si quedan 0 enemigos
         if (enemigosRestantes <= 0)
         {
-            ganarJuego();
+            ganarJuego(); // si no hay enemigos se gana el juego
         }
     }
 
     public void ganarJuego()
     {
-        //llama a la pantalla de victoria 
+        // llama a ControlHUD para que muestre la ventana de fin de juego
         ControlHUD.instancia.establecerVentanaFinJuego(true);
-        //congela el tiempo
-        Time.timeScale = 0f; 
-        //activa el ratón
-        Cursor.lockState = CursorLockMode.None; 
+
+        Time.timeScale = 0f; // congela el juego
+
+        Cursor.lockState = CursorLockMode.None; // permite usar el ratón para poder 
     }
 }
-

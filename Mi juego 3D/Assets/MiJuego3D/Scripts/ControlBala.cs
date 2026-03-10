@@ -1,34 +1,40 @@
-using UnityEngine;
+using UnityEngine; 
 
-public class ControlBala : MonoBehaviour
+public class ControlBala : MonoBehaviour 
 {
-    public GameObject particulasExplosion;
-    public int cantidadVida;
+    public GameObject particulasExplosion; 
+    public int cantidadVida; 
     public float tiempoActivo;
-    private float tiempoDisparo;
-
+    private float tiempoDisparo; 
+ 
     public void OnEnable()
     {
-        //cada vez que se dispara el tiempo se reinicia a 0
+        // guarda el tiempo en el que se disparo la bala
         tiempoDisparo = Time.time;
     }
 
-    private void Update()
+    private void Update() 
     {
-        //comprueba si la bala esta mas tiempo del permitido y la desactiva si es asi
-        if (Time.time - tiempoDisparo >= tiempoActivo) gameObject.SetActive(false);
+        // comprueba si la bala lleva mucho tiempo en el mapa sin tocar ningun objetivo
+        if (Time.time - tiempoDisparo >= tiempoActivo)
+        {
+            // si esto se cumple desactiva la bala
+            gameObject.SetActive(false);
+        }
     }
+
     public void OnTriggerEnter(Collider other)
     {
-        //diferencia si ha disparado al jugador o al enemigo
+        // comprueba si le ha dado al jugador
         if (other.CompareTag("Jugador"))
         {
-            //le quita vidas al jugador
+            // le quita vida al jugador
             other.GetComponent<ControlJugador>().QuitarVidasJugador(cantidadVida);
         }
+        // comprueba si le ha dado a un enemigo
         else if (other.CompareTag("Enemigo"))
         {
-            //le quita vidas al enemigo
+            //le quita vida al enemigo
             ControlEnemigoMejorado enemigo = other.GetComponent<ControlEnemigoMejorado>();
             if (enemigo != null)
             {
@@ -36,10 +42,13 @@ public class ControlBala : MonoBehaviour
             }
         }
 
-        // crea las partículas de choque de la bala y las destruye después de un segundo
+        // muestra el efecto justo donde la bala colisiona
         GameObject particulas = Instantiate(particulasExplosion, transform.position, Quaternion.identity);
+
+        // destruye las partículas 
         Destroy(particulas, 1f);
 
+        // se desactiva la bala
         gameObject.SetActive(false);
     }
 }

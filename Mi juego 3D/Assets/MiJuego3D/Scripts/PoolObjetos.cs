@@ -1,44 +1,51 @@
-using System.Collections.Generic;
-using UnityEngine;
+using System.Collections.Generic; 
+using UnityEngine; 
 
-public class PoolObjetos : MonoBehaviour
+public class PoolObjetos : MonoBehaviour 
 {
-    public GameObject objetoPrefab; // la bala
-    public int numObjetosOnStart; // número de balas que se crean al cargar el nivel
+    public GameObject objetoPrefab;
+    public int numObjetosOnStart;
+    private List<GameObject> objetosPooled = new List<GameObject>();
 
-    private List<GameObject> objetosPooled = new List<GameObject>(); // lista donde se guardan las balas
-
-    private void Start()
+    private void Start() 
     {
-        //bucle crea el número de balas que se especifica en numObjetosOnStart al empezar a jugar
+        // un bucle que se repite tantas veces como ponga en numObjetosOnStart
         for (int x = 0; x < numObjetosOnStart; x++)
         {
-            crearNuevoObjeto();
+            crearNuevoObjeto(); //crear una bala invisible y la mete en la lista
         }
     }
 
-    private GameObject crearNuevoObjeto()
+    private GameObject crearNuevoObjeto() 
     {
-        //se crea la bala
+        // clona el Prefab y lo pone en el mapa
         GameObject objeto = Instantiate(objetoPrefab);
-        // se desactiva para que no se vea
+
+        // desactivamos la bala para que no se vea ni consuma recursos
         objeto.SetActive(false);
-        // se añade a la lista 
+
+        // se añade la bala apagada a la Lista 
         objetosPooled.Add(objeto);
 
+        // devuelve la bala
         return objeto;
     }
 
-    public GameObject getObjeto()
+    public GameObject getObjeto() 
     {
-        //al dispara busca la primera bala que este desactivada
+        // busca en la Lista de balas la primera bala que este desactivada usando una expresión lambda
         GameObject objeto = objetosPooled.Find(x => x.activeInHierarchy == false);
-        // si te quedas sin balas en la lista se crea una de "emergencia"
-        if (objeto == null)
-            objeto = crearNuevoObjeto();
-        //se activa la bala para que el arma pueda disparar
-        objeto.SetActive(true);
-        return objeto;
 
+        // si es null todas las balas han sido ya usadas
+        if (objeto == null)
+        {
+            // fabrica una bala nueva
+            objeto = crearNuevoObjeto();
+        }
+
+        // cuando la bala dse puede usar se activa para poder disparar
+        objeto.SetActive(true);
+
+        return objeto;
     }
 }
