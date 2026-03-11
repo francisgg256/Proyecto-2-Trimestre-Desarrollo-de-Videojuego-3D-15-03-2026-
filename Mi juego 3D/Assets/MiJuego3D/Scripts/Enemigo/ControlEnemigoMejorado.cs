@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.AI; 
+using UnityEngine.AI;
 
 public enum EstadoIA
 {
@@ -8,32 +8,32 @@ public enum EstadoIA
     Persiguiendo
 }
 
-public class ControlEnemigoMejorado : MonoBehaviour 
+public class ControlEnemigoMejorado : MonoBehaviour
 {
     public EstadoIA estadoActual = EstadoIA.Patrullando;
 
     [Header("Estadística")]
-    public int vidasActual; 
-    public int vidasMax; 
+    public int vidasActual;
+    public int vidasMax;
 
     [Header("Movimiento e IA")]
-    public float radioDeteccion = 10f; 
-    public float rangoAtaque = 3f; 
-    public Transform[] puntosPatrulla; 
-    private int indicePatrulla = 0; 
+    public float radioDeteccion = 10f;
+    public float rangoAtaque = 3f;
+    public Transform[] puntosPatrulla;
+    private int indicePatrulla = 0;
 
     private NavMeshAgent agente;
-    private ControlArma arma; 
+    private ControlArma arma;
     private GameObject objetivo;
 
-    void Awake() 
+    void Awake()
     {
-        agente = GetComponent<NavMeshAgent>(); 
+        agente = GetComponent<NavMeshAgent>();
         arma = GetComponent<ControlArma>();
-        objetivo = GameObject.FindGameObjectWithTag("Jugador"); 
+        objetivo = GameObject.FindGameObjectWithTag("Jugador");
     }
 
-    void Start() 
+    void Start()
     {
         //comprueba si el enemigo no se queda flotando o por debajo del suelo
         if (agente != null && NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
@@ -43,8 +43,11 @@ public class ControlEnemigoMejorado : MonoBehaviour
         }
     }
 
-    void Update() 
+    void Update()
     {
+        // --- LA LÍNEA MÁGICA: Si el juego está pausado (ej: mirando el inventario), el enemigo deja de pensar y disparar.
+        if (ControlJuego.instancia != null && ControlJuego.instancia.juegoPausado) return;
+
         if (agente == null || !agente.isOnNavMesh) return;
 
         //calcula la distancia entre el enemigo y el jugador
@@ -52,7 +55,7 @@ public class ControlEnemigoMejorado : MonoBehaviour
 
         switch (estadoActual) // comprueba el estado del enemigo
         {
-            case EstadoIA.Patrullando: 
+            case EstadoIA.Patrullando:
                 ComportamientoPatrulla(); // camina por los puntos de patrullaje
 
                 // si ell jugador entra en el rango de detección el enemigo cambia al estaado de persiguiendo
@@ -60,7 +63,7 @@ public class ControlEnemigoMejorado : MonoBehaviour
                     estadoActual = EstadoIA.Persiguiendo;
                 break;
 
-            case EstadoIA.Persiguiendo: 
+            case EstadoIA.Persiguiendo:
                 ComportamientoPersecucion(distanciaAlJugador); // persigue al jugador y dispara si lo tiene a tiro
 
                 //para que el enemigo no se vuelva loco usamos la histéresis que basicamente es que el jugador se tiene que alejar un rango especifico para que el enemigo vuelva a patrullar
@@ -73,7 +76,7 @@ public class ControlEnemigoMejorado : MonoBehaviour
         }
     }
 
-    void ComportamientoPatrulla() 
+    void ComportamientoPatrulla()
     {
         if (puntosPatrulla.Length == 0) return;
 
@@ -89,12 +92,12 @@ public class ControlEnemigoMejorado : MonoBehaviour
         }
     }
 
-    void ComportamientoPersecucion(float distancia) 
+    void ComportamientoPersecucion(float distancia)
     {
         // si el jugador esta dentro del rango de ataque el enemigo se para para apuntar y disparar
         if (distancia <= rangoAtaque)
         {
-            agente.isStopped = true; 
+            agente.isStopped = true;
 
             // calcula la dirección para apuntar al jugador
             Vector3 direccion = (objetivo.transform.position - transform.position).normalized;
@@ -113,7 +116,7 @@ public class ControlEnemigoMejorado : MonoBehaviour
         }
     }
 
-    public void QuitarVidasEnemigo(int cantidad) 
+    public void QuitarVidasEnemigo(int cantidad)
     {
         vidasActual -= cantidad; //resta vida
         if (vidasActual <= 0) // si tiene 0 de vida

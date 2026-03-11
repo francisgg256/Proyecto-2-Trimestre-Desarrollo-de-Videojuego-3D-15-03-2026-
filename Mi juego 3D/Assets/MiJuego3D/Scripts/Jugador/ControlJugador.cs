@@ -1,47 +1,61 @@
-using UnityEngine; 
+using UnityEngine;
 
-public class ControlJugador : MonoBehaviour 
+public class ControlJugador : MonoBehaviour
 {
-    [Header("Movimiento")] 
-    public float velocidad; 
-    public float velocidadSprint = 10f; 
-    public float fuerzaSalto = 8f; 
+    [Header("Movimiento")]
+    public float velocidad;
+    public float velocidadSprint = 10f;
+    public float fuerzaSalto = 8f;
 
     [Header("Camara")]
-    public float sensibilidadRaton; 
-    public float maxVistaX; 
-    public float minVistaX; 
-    private float rotacionX; 
+    public float sensibilidadRaton;
+    public float maxVistaX;
+    public float minVistaX;
+    private float rotacionX;
 
     [Header("Vidas")]
-    public int vidasActual; 
-    public int vidasMax; 
+    public int vidasActual;
+    public int vidasMax;
 
-    [Tooltip("Porcentaje de vida")] 
-    [Range(0f, 1f)] 
-    public float umbralAutoCura = 0.1f; 
+    [Tooltip("Porcentaje de vida")]
+    [Range(0f, 1f)]
+    public float umbralAutoCura = 0.1f;
+
+    [Header("Daño por Caída")]
+    [Tooltip("A partir de qué velocidad de caída te haces daño ")]
+    public float umbralVelocidadCaida = -15f;
+    public int dañoPorCaida = 20; 
+    private bool estabaEnElSuelo = true;
+    private float velocidadYAnterior = 0f;
 
     [Header("Inventario de Armas")]
-    public ControlArma[] inventarioArmas; 
-    private int indiceArmaActual = 0; 
-    private ControlArma armaActual; 
+    public ControlArma[] inventarioArmas;
+    private int indiceArmaActual = 0;
+    private ControlArma armaActual;
 
     [Header("Inventario")]
-    public int botiquinesGuardados = 0; 
-    public int balasPistolaGuardadas = 0; 
-    public int balasRifleGuardadas = 0; 
+    public int botiquinesGuardados = 0;
+    public int balasPistolaGuardadas = 0;
+    public int balasRifleGuardadas = 0;
 
-    private Camera camara; 
-    private Rigidbody fisica; 
+    [Header("Sonidos")]
+    public AudioClip saltoSfx;
+    public AudioClip dañoSfx;
+    private AudioSource audiosource;
 
-    private void Awake() 
+    private Camera camara;
+    private Rigidbody fisica;
+
+    private void Awake()
     {
-        camara = Camera.main; 
-        fisica = GetComponent<Rigidbody>(); 
-        Cursor.lockState = CursorLockMode.Locked; 
+        camara = Camera.main;
+        fisica = GetComponent<Rigidbody>();
+        Cursor.lockState = CursorLockMode.Locked;
+        // inicializa el componente de audio
+        audiosource = GetComponent<AudioSource>();
     }
 
-    public void Start() 
+    public void Start()
     {
         Time.timeScale = 1.0f; // se asegura de que el tiempo no este congelado
 
@@ -51,10 +65,11 @@ public class ControlJugador : MonoBehaviour
         ControlHUD.instancia.ActualizarTextosMochila(botiquinesGuardados, balasPistolaGuardadas, balasRifleGuardadas); // pone los contadores a 0
     }
 
-    private void Update() 
+    private void Update()
     {
         if (ControlJuego.instancia.juegoPausado) return;
 
+        ComprobarCaida(); // <-- NUEVO: Verifica si te has roto las piernas al caer
         Movimiento(); // llama a la funcion de movimiento
         VistaCamara(); // llama a la función de movimiento de la cámara
 
@@ -62,7 +77,7 @@ public class ControlJugador : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Tab)) // si se pulsa el tab se abre el inventario
         {
-            ControlHUD.instancia.AlternarMenuInventario(); 
+            ControlHUD.instancia.AlternarMenuInventario();
         }
 
         if (Input.GetKeyDown(KeyCode.H)) UsarBotiquin(); // si se pulsa la h se usa un botiquín
@@ -87,13 +102,32 @@ public class ControlJugador : MonoBehaviour
         }
     }
 
-    public void GuardarEnMochila(TipoExtra tipo, int cantidad) 
+    private void ComprobarCaida()
+    {
+        Ray rayo = new Ray(transform.position, Vector3.down);
+        bool estaEnElSuelo = Physics.Raycast(rayo, 1.1f); // comprueba si el láser toca el suelo
+
+        // si ahora el personaje esta en el suelo pero antes no lo estaba se comprueba si iba a  mucha velocidad para que si va rapido se haga daño de caida
+        if (estaEnElSuelo && !estabaEnElSuelo)
+        {
+            if (velocidadYAnterior <= umbralVelocidadCaida)
+            {
+                Debug.Log("Daño por caída. Velocidad de impacto: " + velocidadYAnterior);
+                QuitarVidasJugador(dañoPorCaida);
+            }
+        }
+
+        estabaEnElSuelo = estaEnElSuelo;
+        velocidadYAnterior = fisica.linearVelocity.y;
+    }
+
+    public void GuardarEnMochila(TipoExtra tipo, int cantidad)
     {
         switch (tipo) // un case que distingue el tipo de coleccionable que se recoge
         {
-            case TipoExtra.Vida: botiquinesGuardados++; break; 
-            case TipoExtra.BalasPistola: balasPistolaGuardadas += cantidad; break; 
-            case TipoExtra.BalasRifle: balasRifleGuardadas += cantidad; break; 
+            case TipoExtra.Vida: botiquinesGuardados++; break;
+            case TipoExtra.BalasPistola: balasPistolaGuardadas += cantidad; break;
+            case TipoExtra.BalasRifle: balasRifleGuardadas += cantidad; break;
         }
         // actualiza el texto
         ControlHUD.instancia.ActualizarTextosMochila(botiquinesGuardados, balasPistolaGuardadas, balasRifleGuardadas);
@@ -137,7 +171,7 @@ public class ControlJugador : MonoBehaviour
         ControlHUD.instancia.ActualizarTextosMochila(botiquinesGuardados, balasPistolaGuardadas, balasRifleGuardadas);
     }
 
-    private void EquiparArma(int indice) 
+    private void EquiparArma(int indice)
     {
         // cambia de arma
         for (int i = 0; i < inventarioArmas.Length; i++)
@@ -161,6 +195,9 @@ public class ControlJugador : MonoBehaviour
             fisica.linearVelocity = new Vector3(fisica.linearVelocity.x, 0, fisica.linearVelocity.z);
             // empuja al personaje hacia arriba
             fisica.AddForce(Vector3.up * fuerzaSalto, ForceMode.Impulse);
+
+            // Reproduce el sonido de salto
+            if (audiosource != null && saltoSfx != null) audiosource.PlayOneShot(saltoSfx);
         }
     }
 
@@ -182,7 +219,7 @@ public class ControlJugador : MonoBehaviour
 
     private void Movimiento()
     {
-        float velocidadActual = velocidad; 
+        float velocidadActual = velocidad;
 
         // si se pulsa el shift izquierdo
         if (Input.GetKey(KeyCode.LeftShift))
@@ -201,9 +238,12 @@ public class ControlJugador : MonoBehaviour
         fisica.linearVelocity = new Vector3(direccion.x, fisica.linearVelocity.y, direccion.z);
     }
 
-    internal void QuitarVidasJugador(int cantidadVida) 
+    internal void QuitarVidasJugador(int cantidadVida)
     {
         vidasActual -= cantidadVida; // resta vida
+
+        // Reproduce el sonido de recibir daño
+        if (audiosource != null && dañoSfx != null) audiosource.PlayOneShot(dañoSfx);
 
         // calcula el numero de puntos de vida que representan el umbral 
         float puntosParaCurar = vidasMax * umbralAutoCura;
@@ -211,7 +251,7 @@ public class ControlJugador : MonoBehaviour
         // si la vida esta por debajo de ese umbral se usa el botiquin
         if (vidasActual <= puntosParaCurar && vidasActual > 0 && botiquinesGuardados > 0)
         {
-            UsarBotiquin(); 
+            UsarBotiquin();
         }
 
         ControlHUD.instancia.actualizaBarraVida(vidasActual, vidasMax); // actualiza la barra de vida

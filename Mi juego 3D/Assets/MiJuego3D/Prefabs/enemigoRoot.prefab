@@ -431,9 +431,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControlEnemigoMejorado
   estadoActual: 0
-  vidasActual: 1
-  vidasMax: 1
-  puntuacionEnemigo: 10
+  vidasActual: 5
+  vidasMax: 5
   radioDeteccion: 10
   rangoAtaque: 5
   puntosPatrulla:
@@ -458,6 +457,8 @@ MonoBehaviour:
   puntoSalida: {fileID: 5404319342693940361}
   velocidadBala: 10
   frecuenciaDisparo: 0.3
+  esArmaJugador: 1
+  disparoSfx: {fileID: 0}
 --- !u!114 &4257877392164917780
 MonoBehaviour:
   m_ObjectHideFlags: 0

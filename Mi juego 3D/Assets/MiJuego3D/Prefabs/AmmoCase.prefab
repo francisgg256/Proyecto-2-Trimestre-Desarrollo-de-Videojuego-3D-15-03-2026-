@@ -126,4 +126,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControlExtras
   tipo: 1
-  cantidad: 1
+  cantidad: 5
