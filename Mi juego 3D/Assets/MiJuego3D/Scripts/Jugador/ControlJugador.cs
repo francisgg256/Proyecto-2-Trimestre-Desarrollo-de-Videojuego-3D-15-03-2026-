@@ -67,18 +67,19 @@ public class ControlJugador : MonoBehaviour
 
     private void Update()
     {
-        if (ControlJuego.instancia.juegoPausado) return;
-
-        ComprobarCaida(); // <-- NUEVO: Verifica si te has roto las piernas al caer
-        Movimiento(); // llama a la funcion de movimiento
-        VistaCamara(); // llama a la función de movimiento de la cámara
-
-        if (Input.GetButtonDown("Jump")) Salto(); // si se pulsa el espacio salta
-
         if (Input.GetKeyDown(KeyCode.Tab)) // si se pulsa el tab se abre el inventario
         {
             ControlHUD.instancia.AlternarMenuInventario();
         }
+
+        // si el juego está pausado o el inventario está abierto no hace nada de lo de abajo
+        if (ControlJuego.instancia.juegoPausado || Time.timeScale == 0f) return;
+
+        ComprobarCaida(); //verifica si hay daño de caida
+        Movimiento(); // llama a la funcion de movimiento
+        VistaCamara(); // llama a la función de movimiento de la cámara
+
+        if (Input.GetButtonDown("Jump")) Salto(); // si se pulsa el espacio salta
 
         if (Input.GetKeyDown(KeyCode.H)) UsarBotiquin(); // si se pulsa la h se usa un botiquín
         if (Input.GetKeyDown(KeyCode.R)) RecargarArma(); // si se pulsa la r recarga el arma

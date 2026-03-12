@@ -30,16 +30,19 @@ public class ControlHUD : MonoBehaviour
         instancia = this; // uso del patrón singleton para que todos los scripts puedan acceder a este
     }
 
-    public void AlternarMenuInventario() 
+    public void AlternarMenuInventario()
     {
-        mochilaAbierta = !mochilaAbierta; // abre el inventario
+        mochilaAbierta = !mochilaAbierta; // abre o cierra el inventario
 
         if (panelMochila != null) // comprueba que el panel exista
         {
-            panelMochila.SetActive(mochilaAbierta); // muestra el ventana del inventario en pantalla
+            panelMochila.SetActive(mochilaAbierta); // muestra u oculta la ventana
 
-            // permite usa el ratón en el inventario
+            // permite usar el ratón en el inventario
             Cursor.lockState = mochilaAbierta ? CursorLockMode.None : CursorLockMode.Locked;
+
+            // congela el tiempo si está abierta lo pone a 1 si está cerrada
+            Time.timeScale = mochilaAbierta ? 0f : 1f;
         }
     }
 
