@@ -1068,9 +1068,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 918713664}
-        m_TargetAssemblyTypeName: ControlHUD, Assembly-CSharp
-        m_MethodName: OnBotonVolver
+      - m_Target: {fileID: 1216162634}
+        m_TargetAssemblyTypeName: ControlJugador, Assembly-CSharp
+        m_MethodName: RecargarArma
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
